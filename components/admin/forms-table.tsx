@@ -15,6 +15,7 @@ interface FormWithStats {
   name: string
   description: string | null
   is_active: boolean
+  custom_slug: string | null
   created_at: string
   response_count: number
 }
@@ -40,10 +41,15 @@ export function FormsTable({ forms }: { forms: FormWithStats[] }) {
     setDeletingId(null)
   }
 
-  const copyFormUrl = (formId: string) => {
-    const url = `${window.location.origin}/form/${formId}`
+  const copyFormUrl = (form: FormWithStats) => {
+    const slug = form.custom_slug || form.id
+    const url = `https://ecell-forms.vercel.app/form/${slug}`
     navigator.clipboard.writeText(url)
     alert("Form URL copied to clipboard!")
+  }
+
+  const getFormUrl = (form: FormWithStats) => {
+    return form.custom_slug || form.id
   }
 
   const getStatusColor = (isActive: boolean) => {
@@ -78,6 +84,11 @@ export function FormsTable({ forms }: { forms: FormWithStats[] }) {
               <div>
                 <div>{form.name}</div>
                 {form.description && <div className="text-sm text-muted-foreground">{form.description}</div>}
+                {form.is_active && (
+                  <div className="text-xs text-blue-600 mt-1">
+                    https://ecell-forms.vercel.app/form/{getFormUrl(form)}
+                  </div>
+                )}
               </div>
             </TableCell>
             <TableCell>
@@ -117,12 +128,12 @@ export function FormsTable({ forms }: { forms: FormWithStats[] }) {
                   {form.is_active && (
                     <>
                       <DropdownMenuItem asChild>
-                        <Link href={`/form/${form.id}`} target="_blank">
+                        <Link href={`/form/${getFormUrl(form)}`} target="_blank">
                           <LinkIcon className="mr-2 h-4 w-4" />
                           Open Form
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => copyFormUrl(form.id)}>
+                      <DropdownMenuItem onClick={() => copyFormUrl(form)}>
                         <Copy className="mr-2 h-4 w-4" />
                         Copy Form URL
                       </DropdownMenuItem>

@@ -25,6 +25,7 @@ export function FormBuilder({ userId, initialForm }: FormBuilderProps) {
   const router = useRouter()
   const [name, setName] = useState(initialForm?.name || "")
   const [description, setDescription] = useState(initialForm?.description || "")
+  const [customSlug, setCustomSlug] = useState(initialForm?.custom_slug || "")
   const [isActive, setIsActive] = useState(initialForm?.is_active ?? true)
   const [questions, setQuestions] = useState<EcellQuestion[]>(initialForm?.questions || [])
   const [isSaving, setIsSaving] = useState(false)
@@ -37,9 +38,30 @@ export function FormBuilder({ userId, initialForm }: FormBuilderProps) {
       return
     }
 
+    // Validate custom slug if provided
+    if (customSlug && !/^[a-zA-Z0-9_-]+$/.test(customSlug)) {
+      setError("Custom slug can only contain letters, numbers, hyphens, and underscores")
+      return
+    }
+
     setIsSaving(true)
     setError(null)
     const supabase = createClient()
+
+    // Check if custom slug is already taken (if provided and not updating same form)
+    if (customSlug) {
+      const { data: existingForm } = await supabase
+        .from("ecell_forms")
+        .select("id")
+        .eq("custom_slug", customSlug)
+        .single()
+      
+      if (existingForm && (!initialForm || existingForm.id !== initialForm.id)) {
+        setError("This custom slug is already taken. Please choose a different one.")
+        setIsSaving(false)
+        return
+      }
+    }
 
     try {
       if (initialForm) {
@@ -49,6 +71,7 @@ export function FormBuilder({ userId, initialForm }: FormBuilderProps) {
           .update({
             name,
             description,
+            custom_slug: customSlug || null,
             is_active: isActive,
           })
           .eq("id", initialForm.id)
@@ -87,6 +110,7 @@ export function FormBuilder({ userId, initialForm }: FormBuilderProps) {
           .insert({
             name,
             description,
+            custom_slug: customSlug || null,
             is_active: isActive,
           })
           .select()
@@ -179,6 +203,23 @@ export function FormBuilder({ userId, initialForm }: FormBuilderProps) {
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
             />
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="customSlug">Custom URL Slug (Optional)</Label>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">https://ecell-forms.vercel.app/form/</span>
+              <Input 
+                id="customSlug" 
+                placeholder="my-custom-form" 
+                value={customSlug} 
+                onChange={(e) => setCustomSlug(e.target.value.replace(/[^a-zA-Z0-9_-]/g, ''))}
+                className="flex-1"
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Leave empty to use auto-generated ID. Only letters, numbers, hyphens, and underscores allowed.
+            </p>
           </div>
 
           <div className="flex items-center space-x-2">

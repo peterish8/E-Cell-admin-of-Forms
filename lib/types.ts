@@ -4,6 +4,7 @@ export interface EcellForm {
   name: string
   description: string | null
   is_active: boolean
+  custom_slug: string | null
   created_at: string
   created_by: string
 }
