@@ -14,7 +14,8 @@ const ADMIN_USERS = {
   "sakshi": "sakshi2025",
   "kulratan": "kulratan2025",
   "sarthak": "sarthak2025",
-  "priyanshu": "priyanshu2025"
+  "priyanshu": "priyanshu2025",
+  "divya": "divya2025"
 }
 
 export async function loginAction(formData: FormData) {
