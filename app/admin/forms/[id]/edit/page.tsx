@@ -14,15 +14,30 @@ export default async function EditFormPage({ params }: { params: Promise<{ id: s
 
   const supabase = await createClient()
 
-  // Fetch form with questions
-  const { data: form, error } = await supabase
+  // Try to fetch form by custom_slug first, then by id
+  let { data: form, error } = await supabase
     .from("ecell_forms")
     .select(`
       *,
       ecell_questions (*)
     `)
-    .eq("id", id)
+    .eq("custom_slug", id)
     .single()
+
+  // If not found by slug, try by UUID
+  if (error || !form) {
+    const { data: formById, error: formByIdError } = await supabase
+      .from("ecell_forms")
+      .select(`
+        *,
+        ecell_questions (*)
+      `)
+      .eq("id", id)
+      .single()
+    
+    form = formById
+    error = formByIdError
+  }
 
   if (error || !form) {
     notFound()

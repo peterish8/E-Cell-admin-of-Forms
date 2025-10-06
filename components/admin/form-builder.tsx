@@ -50,31 +50,41 @@ export function FormBuilder({ userId, initialForm }: FormBuilderProps) {
 
     // Check if custom slug is already taken (if provided and not updating same form)
     if (customSlug) {
-      const { data: existingForm } = await supabase
-        .from("ecell_forms")
-        .select("id")
-        .eq("custom_slug", customSlug)
-        .single()
-      
-      if (existingForm && (!initialForm || existingForm.id !== initialForm.id)) {
-        setError("This custom slug is already taken. Please choose a different one.")
-        setIsSaving(false)
-        return
+      try {
+        const { data: existingForm } = await supabase
+          .from("ecell_forms")
+          .select("id")
+          .eq("custom_slug", customSlug)
+          .single()
+        
+        if (existingForm && (!initialForm || existingForm.id !== initialForm.id)) {
+          setError("This custom slug is already taken. Please choose a different one.")
+          setIsSaving(false)
+          return
+        }
+      } catch (slugError) {
+        // If custom_slug column doesn't exist, skip validation
+        console.warn("Custom slug validation skipped - column may not exist yet")
       }
     }
 
     try {
       if (initialForm) {
         // Update existing form
+        const updateData: any = {
+          name,
+          description,
+          is_active: isActive,
+        }
+        
+        if (customSlug) updateData.custom_slug = customSlug
+        
         const { error: formError } = await supabase
           .from("ecell_forms")
-          .update({
-            name,
-            description,
-            custom_slug: customSlug || null,
-            is_active: isActive,
-          })
+          .update(updateData)
           .eq("id", initialForm.id)
+
+        if (formError) throw formError
 
         if (formError) throw formError
 
@@ -105,16 +115,21 @@ export function FormBuilder({ userId, initialForm }: FormBuilderProps) {
         router.refresh()
       } else {
         // Create new form
+        const insertData: any = {
+          name,
+          description,
+          is_active: isActive,
+        }
+        
+        if (customSlug) insertData.custom_slug = customSlug
+        
         const { data: formData, error: formError } = await supabase
           .from("ecell_forms")
-          .insert({
-            name,
-            description,
-            custom_slug: customSlug || null,
-            is_active: isActive,
-          })
+          .insert(insertData)
           .select()
           .single()
+
+        if (formError) throw formError
 
         if (formError) throw formError
 

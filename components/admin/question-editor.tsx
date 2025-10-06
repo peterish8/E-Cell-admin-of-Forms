@@ -21,6 +21,7 @@ interface QuestionEditorProps {
 const questionTypes = [
   { value: "fill", label: "📝 Fill Input (Name, Phone, etc.)" },
   { value: "text", label: "Short Text" },
+  { value: "textarea", label: "📄 Long Text (Paragraph)" },
   { value: "email", label: "Email" },
   { value: "single", label: "🎯 Single Choice (Radio)" },
   { value: "multiple", label: "✅ Multiple Choice (Checkbox)" },

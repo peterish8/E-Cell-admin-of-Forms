@@ -37,23 +37,35 @@ export default function FormResponsesPage({ params }: { params: Promise<{ id: st
       
       const supabase = createClient()
 
-      // Fetch form with questions
-      const { data: formData, error: formError } = await supabase
+      // Try to fetch form by custom_slug first, then by id
+      let { data: formData, error: formError } = await supabase
         .from("ecell_forms")
         .select(`*, ecell_questions (*)`)
-        .eq("id", id)
+        .eq("custom_slug", id)
         .single()
+
+      // If not found by slug, try by UUID
+      if (formError || !formData) {
+        const { data: formById, error: formByIdError } = await supabase
+          .from("ecell_forms")
+          .select(`*, ecell_questions (*)`)
+          .eq("id", id)
+          .single()
+        
+        formData = formById
+        formError = formByIdError
+      }
 
       if (formError || !formData) {
         router.push('/admin')
         return
       }
 
-      // Fetch responses
+      // Fetch responses using the actual form ID
       const { data: responsesData } = await supabase
         .from("submissions")
         .select("*")
-        .eq("form_id", id)
+        .eq("form_id", formData.id)
         .order("created_at", { ascending: false })
 
       setForm(formData)
@@ -65,14 +77,14 @@ export default function FormResponsesPage({ params }: { params: Promise<{ id: st
   }, [id, router])
 
   const handleResponseDeleted = async () => {
-    if (!id) return
+    if (!form) return
     
     console.log('Refreshing responses data...')
     const supabase = createClient()
     const { data: responsesData, error } = await supabase
       .from("submissions")
       .select("*")
-      .eq("form_id", id)
+      .eq("form_id", form.id)
       .order("created_at", { ascending: false })
     
     console.log('Fetched responses:', responsesData)
