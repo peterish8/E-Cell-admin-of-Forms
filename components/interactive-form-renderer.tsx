@@ -71,8 +71,12 @@ export function InteractiveFormRenderer({ form }: InteractiveFormRendererProps) 
       if (questionType === 'email' && value && typeof value === 'string') {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
         if (emailRegex.test(value)) {
-          if (!value.endsWith('@medhaviskillsuniversity.edu.in')) {
-            setError("Only college emails (@medhaviskillsuniversity.edu.in) are allowed")
+          const isCollegeEmail = value.endsWith('@medhaviskillsuniversity.edu.in')
+          const commonDomains = ['@gmail.com', '@yahoo.com', '@outlook.com', '@hotmail.com', '@yahoo.in', '@rediffmail.com']
+          const isTempEmail = commonDomains.some(domain => value.endsWith(domain))
+          
+          if (!isCollegeEmail && !isTempEmail) {
+            setError("Please use your college email (@medhaviskillsuniversity.edu.in) or a common personal email (Gmail, Yahoo, Outlook, etc.) if you haven't received college email yet")
             return
           }
           await checkEmailDuplicate(value)
@@ -99,9 +103,13 @@ export function InteractiveFormRenderer({ form }: InteractiveFormRendererProps) 
         return false
       }
       
-      // Check if email is from college domain
-      if (!answer.endsWith('@medhaviskillsuniversity.edu.in')) {
-        setError("Only college emails (@medhaviskillsuniversity.edu.in) are allowed")
+      // Check if email is from college domain or temporary bypass
+      const isCollegeEmail = answer.endsWith('@medhaviskillsuniversity.edu.in')
+      const commonDomains = ['@gmail.com', '@yahoo.com', '@outlook.com', '@hotmail.com', '@yahoo.in', '@rediffmail.com']
+      const isTempEmail = commonDomains.some(domain => answer.endsWith(domain))
+      
+      if (!isCollegeEmail && !isTempEmail) {
+        setError("Please use your college email (@medhaviskillsuniversity.edu.in) or a common personal email (Gmail, Yahoo, Outlook, etc.) if you haven't received college email yet")
         return false
       }
       
