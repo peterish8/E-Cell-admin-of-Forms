@@ -72,10 +72,11 @@ export function InteractiveFormRenderer({ form }: InteractiveFormRendererProps) 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
         if (emailRegex.test(value)) {
           const isCollegeEmail = value.endsWith('@medhaviskillsuniversity.edu.in')
-          const isTempEmail = value.endsWith('@gmail.com') || value.endsWith('@yahoo.com') || value.endsWith('@outlook.com')
+          const commonDomains = ['@gmail.com', '@yahoo.com', '@outlook.com', '@hotmail.com', '@yahoo.in', '@rediffmail.com']
+          const isTempEmail = commonDomains.some(domain => value.endsWith(domain))
           
           if (!isCollegeEmail && !isTempEmail) {
-            setError("Please use your college email (@medhaviskillsuniversity.edu.in) or personal email (Gmail/Yahoo/Outlook) if you haven't received college email yet")
+            setError("Please use your college email (@medhaviskillsuniversity.edu.in) or a common personal email (Gmail, Yahoo, Outlook, etc.) if you haven't received college email yet")
             return
           }
           await checkEmailDuplicate(value)
@@ -104,10 +105,11 @@ export function InteractiveFormRenderer({ form }: InteractiveFormRendererProps) 
       
       // Check if email is from college domain or temporary bypass
       const isCollegeEmail = answer.endsWith('@medhaviskillsuniversity.edu.in')
-      const isTempEmail = answer.endsWith('@gmail.com') || answer.endsWith('@yahoo.com') || answer.endsWith('@outlook.com')
+      const commonDomains = ['@gmail.com', '@yahoo.com', '@outlook.com', '@hotmail.com', '@yahoo.in', '@rediffmail.com']
+      const isTempEmail = commonDomains.some(domain => answer.endsWith(domain))
       
       if (!isCollegeEmail && !isTempEmail) {
-        setError("Please use your college email (@medhaviskillsuniversity.edu.in) or personal email (Gmail/Yahoo/Outlook) if you haven't received college email yet")
+        setError("Please use your college email (@medhaviskillsuniversity.edu.in) or a common personal email (Gmail, Yahoo, Outlook, etc.) if you haven't received college email yet")
         return false
       }
       
