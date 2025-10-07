@@ -71,8 +71,11 @@ export function InteractiveFormRenderer({ form }: InteractiveFormRendererProps) 
       if (questionType === 'email' && value && typeof value === 'string') {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
         if (emailRegex.test(value)) {
-          if (!value.endsWith('@medhaviskillsuniversity.edu.in')) {
-            setError("Only college emails (@medhaviskillsuniversity.edu.in) are allowed")
+          const isCollegeEmail = value.endsWith('@medhaviskillsuniversity.edu.in')
+          const isTempEmail = value.endsWith('@gmail.com') || value.endsWith('@yahoo.com') || value.endsWith('@outlook.com')
+          
+          if (!isCollegeEmail && !isTempEmail) {
+            setError("Please use your college email (@medhaviskillsuniversity.edu.in) or personal email (Gmail/Yahoo/Outlook) if you haven't received college email yet")
             return
           }
           await checkEmailDuplicate(value)
@@ -99,9 +102,12 @@ export function InteractiveFormRenderer({ form }: InteractiveFormRendererProps) 
         return false
       }
       
-      // Check if email is from college domain
-      if (!answer.endsWith('@medhaviskillsuniversity.edu.in')) {
-        setError("Only college emails (@medhaviskillsuniversity.edu.in) are allowed")
+      // Check if email is from college domain or temporary bypass
+      const isCollegeEmail = answer.endsWith('@medhaviskillsuniversity.edu.in')
+      const isTempEmail = answer.endsWith('@gmail.com') || answer.endsWith('@yahoo.com') || answer.endsWith('@outlook.com')
+      
+      if (!isCollegeEmail && !isTempEmail) {
+        setError("Please use your college email (@medhaviskillsuniversity.edu.in) or personal email (Gmail/Yahoo/Outlook) if you haven't received college email yet")
         return false
       }
       
